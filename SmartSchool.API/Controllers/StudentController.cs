@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SmartSchool.API.Data;
 using SmartSchool.API.Models;
 using System;
 using System.Collections.Generic;
@@ -13,24 +15,24 @@ namespace SmartSchool.API.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        List<Student> students = new List<Student>
+        private readonly SmartContext _context;
+
+        public StudentController(SmartContext context)
         {
-            new Student(1, "Daniel", "Carlos", "84849595"),
-            new Student(2, "Jorge", "Dias", "95958484"),
-            new Student(3, "Ney", "Vitu", "95958585")
-        };
+            _context = context;
+        }
 
         // GET: api/<StudentController>
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(students);
+            return Ok(_context.Students);
         }
 
         [HttpGet("ById/{id}")]
         public IActionResult GetById(int id)
         {
-            var student = students.FirstOrDefault(s => s.Id.Equals(id));
+            var student = _context.Students.FirstOrDefault(s => s.Id.Equals(id));
             if (student == null)
             {
                 return BadRequest("Student id doesn't exist!");
@@ -42,6 +44,8 @@ namespace SmartSchool.API.Controllers
         [HttpPost]
         public IActionResult Post(Student student)
         {
+            _context.Add(student);
+            _context.SaveChanges();
             return Ok(student);
         }
 
@@ -49,6 +53,28 @@ namespace SmartSchool.API.Controllers
         [HttpPut("{id}")]
         public IActionResult Put(int id, Student student)
         {
+            var _student = _context.Students.AsNoTracking().FirstOrDefault(s => s.Id == id);
+            if (_student == null)
+            {
+                return BadRequest("Student not found!");
+            }
+
+            _context.Update(student);
+            _context.SaveChanges();
+            return Ok(student);
+        }
+
+        [HttpPatch("{id}")]
+        public IActionResult Patch(int id, Student student)
+        {
+            var _student = _context.Students.AsNoTracking().FirstOrDefault(s => s.Id == id);
+            if (_student == null)
+            {
+                return BadRequest("Student not found!");
+            }
+
+            _context.Update(student);
+            _context.SaveChanges();
             return Ok(student);
         }
 
@@ -56,7 +82,15 @@ namespace SmartSchool.API.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            return Ok();
+            var _student = _context.Students.FirstOrDefault(s => s.Id == id);
+            if (_student == null)
+            {
+                return BadRequest("Student not found!");
+            }
+
+            _context.Remove(_student);
+            _context.SaveChanges();
+            return Ok("Student deleted!");
         }
 
         
