@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using SmartSchool.API.Data;
+using SmartSchool.API.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,36 +15,84 @@ namespace SmartSchool.API.Controllers
     [ApiController]
     public class TeacherController : ControllerBase
     {
+
+        private readonly SmartContext _context;
+
+        public TeacherController(SmartContext context)
+        {
+            _context = context;
+        }
+
         // GET: api/<TeacherController>
         [HttpGet]
-        public IEnumerable<string> Get()
+        public IActionResult Get()
         {
-            return new string[] { "value1", "value2" };
+            return Ok(_context.Teachers);
         }
 
         // GET api/<TeacherController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("ById/{id}")]
+        public IActionResult Get(int id)
         {
-            return "value";
+            var teacher = _context.Teachers.FirstOrDefault(T => T.Id == id);
+            if (teacher == null)
+            {
+                return BadRequest("Teacher not found!");
+            }
+            return Ok(teacher);
         }
 
         // POST api/<TeacherController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public IActionResult Post(Teacher teacher)
         {
+            _context.Add(teacher);
+            _context.SaveChanges();
+            return Ok("Teacher added successfully");
         }
 
         // PUT api/<TeacherController>/5
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public IActionResult Put(int id, Teacher teacher)
         {
+            var _teacher = _context.Teachers.AsNoTracking().FirstOrDefault(T => T.Id == id);
+            if (_teacher == null)
+            {
+                return BadRequest("Teacher not found!");
+            }
+
+            _context.Update(teacher);
+            _context.SaveChanges();
+            return Ok("Teacher data updated successfully!");
+        }
+
+        [HttpPatch("{id}")]
+        public IActionResult Patch(int id, Teacher teacher)
+        {
+            var _teacher = _context.Teachers.AsNoTracking().FirstOrDefault(T => T.Id == id);
+            if (_teacher == null)
+            {
+                return BadRequest("Teacher not found!");
+            }
+
+            _context.Update(teacher);
+            _context.SaveChanges();
+            return Ok("Teacher updated successfully!");
         }
 
         // DELETE api/<TeacherController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public IActionResult Delete(int id)
         {
+            var teacher = _context.Teachers.FirstOrDefault(T => T.Id == id);
+            if (teacher == null)
+            {
+                return BadRequest("Teacher not found!");
+            }
+
+            _context.Remove(teacher);
+            _context.SaveChanges();
+            return Ok("Teacher deleted!");
         }
     }
 }
