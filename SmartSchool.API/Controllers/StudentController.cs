@@ -2,10 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartSchool.API.Data;
 using SmartSchool.API.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,24 +12,25 @@ namespace SmartSchool.API.Controllers
     [ApiController]
     public class StudentController : ControllerBase
     {
-        private readonly SmartContext _context;
+        private readonly IRepository _repository;
 
-        public StudentController(SmartContext context)
+        public StudentController(IRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         // GET: api/<StudentController>
         [HttpGet]
         public IActionResult Get()
         {
-            return Ok(_context.Students);
+            var result = _repository.GetAllStudents(true);
+            return Ok(result);
         }
 
-        [HttpGet("ById/{id}")]
+        [HttpGet("{id}")]
         public IActionResult GetById(int id)
         {
-            var student = _context.Students.FirstOrDefault(s => s.Id.Equals(id));
+            var student = _repository.GetStudentById(id, true);
             if (student == null)
             {
                 return BadRequest("Student id doesn't exist!");
@@ -44,53 +42,65 @@ namespace SmartSchool.API.Controllers
         [HttpPost]
         public IActionResult Post(Student student)
         {
-            _context.Add(student);
-            _context.SaveChanges();
-            return Ok(student);
+            _repository.Add(student);
+            if (_repository.SaveChanges())
+            {
+                return Ok(student);
+            }
+            return BadRequest("Student not registered");
         }
 
         // PUT api/<StudentController>/5
         [HttpPut("{id}")]
         public IActionResult Put(int id, Student student)
         {
-            var _student = _context.Students.AsNoTracking().FirstOrDefault(s => s.Id == id);
+            var _student = _repository.GetStudentById(id, false);
             if (_student == null)
             {
                 return BadRequest("Student not found!");
             }
 
-            _context.Update(student);
-            _context.SaveChanges();
-            return Ok(student);
+            _repository.Update(student);
+            if (_repository.SaveChanges())
+            {
+                return Ok(student);
+            }
+            return BadRequest("Student not registered");
         }
 
         [HttpPatch("{id}")]
         public IActionResult Patch(int id, Student student)
         {
-            var _student = _context.Students.AsNoTracking().FirstOrDefault(s => s.Id == id);
+            var _student = _repository.GetStudentById(id, false);
             if (_student == null)
             {
                 return BadRequest("Student not found!");
             }
 
-            _context.Update(student);
-            _context.SaveChanges();
-            return Ok(student);
+            _repository.Update(student);
+            if (_repository.SaveChanges())
+            {
+                return Ok(student);
+            }
+            return BadRequest("Student not registered");
         }
 
         // DELETE api/<StudentController>/5
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var _student = _context.Students.FirstOrDefault(s => s.Id == id);
+            var _student = _repository.GetStudentById(id, false);
             if (_student == null)
             {
                 return BadRequest("Student not found!");
             }
 
-            _context.Remove(_student);
-            _context.SaveChanges();
-            return Ok("Student deleted!");
+            _repository.Delete(_student);
+            if (_repository.SaveChanges())
+            {
+                return Ok("Student deleted");
+            }
+            return BadRequest("Student not registered");
         }
 
         
