@@ -2,24 +2,24 @@
 
 namespace SmartSchool.API.Models
 {
-    public class StudentDiscipline
+    public class StudentCourse
     {
         public DateTime StartDate { get; set; } = DateTime.Now;
         public DateTime? EndDate { get; set; } = null;
         public int? Grade { get; set; } = null;
         public int StudentId { get; set; }
         public Student Student { get; set; }
-        public int DisciplineId { get; set; }
-        public Discipline Discipline { get; set; }
+        public int CourseId { get; set; }
+        public Course Course { get; set; }
 
-        public StudentDiscipline()
+        public StudentCourse()
         {
         }
 
-        public StudentDiscipline(int studentId, int disciplineId)
+        public StudentCourse(int studentId, int courseId)
         {
             StudentId = studentId;
-            DisciplineId = disciplineId;
+            CourseId = courseId;
         }
     }
 }
